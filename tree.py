@@ -68,3 +68,55 @@ class BinaryTree:
             self.postOrderRecursive(node.left)
             self.postOrderRecursive(node.right)
             print(node.value, end=" ")
+
+    # --- Novos métodos para o catálogo de e-commerce ---
+
+    def getAllInOrder(self):
+        productsList = []
+        self.getAllInOrderRecursive(self.root, productsList)
+        return productsList
+
+    def getAllInOrderRecursive(self, node, productsList):
+        if node is not None:
+            self.getAllInOrderRecursive(node.left, productsList)
+            productsList.append(node.value)
+            self.getAllInOrderRecursive(node.right, productsList)
+
+    def findMin(self):
+        if self.isEmpty():
+            return None
+        currentNode = self.root
+        while currentNode.left is not None:
+            currentNode = currentNode.left
+        return currentNode.value
+
+    def findMax(self):
+        if self.isEmpty():
+            return None
+        currentNode = self.root
+        while currentNode.right is not None:
+            currentNode = currentNode.right
+        return currentNode.value
+
+    def searchByPriceRange(self, minPrice, maxPrice):
+        resultList = []
+        self.searchByPriceRangeRecursive(self.root, minPrice, maxPrice, resultList)
+        return resultList
+        #Esse método retorna uma lista de produtos que estão dentro da faixa de preço especificada (minPrice, maxPrice).
+
+    def searchByPriceRangeRecursive(self, node, minPrice, maxPrice, resultList):
+        if node is None:
+            return
+        #Este método é chamado recursivamente para percorrer a árvore binária de busca e encontrar os produtos que estão dentro da faixa de preço especificada. Ele utiliza a propriedade da árvore binária de busca para otimizar a busca, evitando explorar ramos que não podem conter produtos dentro da faixa de preço.
+
+        # 1. Só explora a esquerda se ainda puder existir algo >= minPrice
+        if node.value.price > minPrice:
+            self.searchByPriceRangeRecursive(node.left, minPrice, maxPrice, resultList)
+
+        # 2. Se o produto atual está dentro da faixa, guarda na lista
+        if minPrice <= node.value.price <= maxPrice:
+            resultList.append(node.value)
+
+        # 3. Só explora a direita se ainda puder existir algo <= maxPrice
+        if node.value.price <= maxPrice:
+            self.searchByPriceRangeRecursive(node.right, minPrice, maxPrice, resultList)
