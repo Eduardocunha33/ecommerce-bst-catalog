@@ -1,3 +1,4 @@
+import os
 import time
 import streamlit as st
 import streamlit.components.v1 as components
@@ -10,7 +11,7 @@ st.set_page_config(page_title="E-commerce Gamer", layout="wide")
 #Explicando: define o limite maximo de unidades permitidas no carrinho do cliente
 maxCartItems = 15
 
-#Explicando: injeta CSS para transformar o botao do carrinho em um circulo verde fixo no canto inferior direito
+#Explicando: injeta CSS para o botao do carrinho e para padronizar o tamanho das fotos nos cards
 st.markdown(
     """
     <style>
@@ -50,6 +51,31 @@ st.markdown(
             font-size: 18px !important;
             font-weight: 700 !important;
             margin: 0 !important;
+        }
+
+        /* Explicando: padroniza a altura das fotos dos produtos sem distorcer (object-fit: contain) */
+        [data-testid="stImage"] img {
+            height: 135px !important;
+            width: 100% !important;
+            object-fit: contain !important;
+            background-color: #ffffff !important;
+            border-radius: 10px !important;
+            padding: 6px !important;
+        }
+
+        /* Explicando: quadrado reservado para produtos que ainda nao tem foto cadastrada */
+        .img-placeholder {
+            height: 135px;
+            width: 100%;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            background-color: rgba(148, 163, 184, 0.08);
         }
     </style>
     """,
@@ -162,10 +188,23 @@ def showCartModal():
     if totalItems >= maxCartItems:
         st.warning(f"Você atingiu o limite máximo de {maxCartItems} unidades no carrinho.")
 
-    if st.button("🧹 Esvaziar carrinho", use_container_width=True):
-        st.session_state.cart = {}
-        st.session_state.reopenCart = False
-        st.rerun()
+    #Explicando: coloca os botoes de acao lado a lado no rodape do carrinho
+    clearCol, payCol = st.columns(2)
+    proceedPayment = False
+
+    with clearCol:
+        if st.button("🧹 Esvaziar carrinho", use_container_width=True):
+            st.session_state.cart = {}
+            st.session_state.reopenCart = False
+            st.rerun()
+
+    with payCol:
+        #Explicando: type="primary" destaca o botao de pagamento como acao principal do modal
+        proceedPayment = st.button("💳 Prosseguir pagamento", type="primary", use_container_width=True)
+
+    #Explicando: exibe um aviso discreto ao clicar, mantendo o fluxo ate a etapa do carrinho
+    if proceedPayment:
+        st.info("💳 Ambiente demonstrativo: a etapa de pagamento não está ativa nesta versão.")
 
 
 # --- CABECALHO DA PAGINA ---
@@ -246,14 +285,33 @@ else:
 
         with currentCol:
             with st.container(border=True):
-                st.caption(product.category)
-                st.markdown(f"**{product.name}**")
-                st.write(f"Especificação: {product.specs}")
-                st.markdown(f"### R$ {product.price:.2f}")
-                st.caption(f"Estoque disponível: {remainingStock} un. (total: {product.stock})")
+                #Explicando: divide o topo do card em texto (esquerda) e foto do produto (direita)
+                infoCol, imgCol = st.columns([1.35, 1], vertical_alignment="center")
 
-                if qtyInCart > 0:
-                    st.caption(f"🟢 No carrinho: {qtyInCart} un.")
+                with infoCol:
+                    st.caption(product.category)
+                    st.markdown(f"**{product.name}**")
+                    st.write(f"Especificação: {product.specs}")
+                    st.markdown(f"### R$ {product.price:.2f}")
+                    st.caption(f"Estoque disponível: {remainingStock} un. (total: {product.stock})")
+
+                    if qtyInCart > 0:
+                        st.caption(f"🟢 No carrinho: {qtyInCart} un.")
+
+                with imgCol:
+                    #Explicando: verifica se existe um link da internet ou um arquivo local valido na pasta images/
+                    imagePath = getattr(product, "image", "").strip()
+                    isWebUrl = imagePath.startswith("http://") or imagePath.startswith("https://")
+                    isLocalFile = imagePath != "" and os.path.exists(imagePath)
+
+                    if isWebUrl or isLocalFile:
+                        st.image(imagePath, use_container_width=True)
+                    else:
+                        #Explicando: mostra um espaco reservado enquanto a foto desse item nao foi adicionada
+                        st.markdown(
+                            '<div class="img-placeholder">📷<br>Foto em breve</div>',
+                            unsafe_allow_html=True
+                        )
 
                 if remainingStock <= 0:
                     buttonLabel = "Limite de estoque atingido"
@@ -265,6 +323,7 @@ else:
                     buttonLabel = "➕ Adicionar ao carrinho"
                     isDisabled = False
 
+                #Explicando: o botao fica fora das colunas para continuar ocupando a largura inteira embaixo do card
                 st.button(
                     buttonLabel,
                     key=f"add_{productId}",
