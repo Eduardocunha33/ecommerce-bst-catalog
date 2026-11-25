@@ -5,19 +5,19 @@ import streamlit.components.v1 as components
 from tree import BinaryTree
 from catalogData import loadCatalog
 
-#Explicando: configura o titulo da aba do navegador e deixa a pagina no modo largo (wide)
+# configura o titulo da aba do navegador e deixa a pagina no modo largo (wide)
 st.set_page_config(page_title="E-commerce Gamer", layout="wide")
 
-#Explicando: define o limite maximo de unidades permitidas no carrinho do cliente
+# define o limite maximo de unidades permitidas no carrinho do cliente
 maxCartItems = 15
 
 
 def formatPrice(value):
-    #Explicando: formata o valor no padrao brasileiro (ex: 7399.0 -> R$ 7.399,00)
+    # formata o valor no padrao brasileiro (ex: 7399.0 -> R$ 7.399,00)
     return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-#Explicando: injeta fonte gamer (Orbitron) e CSS completo (vitrine, sidebar e modal do carrinho) adaptado para tema claro e escuro
+# injeta fonte gamer (Orbitron) e CSS completo (vitrine, sidebar e modal do carrinho) adaptado para tema claro e escuro
 st.markdown(
     """
     <style>
@@ -83,7 +83,7 @@ st.markdown(
             margin-top: 2px;
         }
 
-        /* Explicando: estiliza os pinos e numeros do slider da barra lateral em verde neon */
+        /*  estiliza os pinos e numeros do slider da barra lateral em verde neon */
         [data-testid="stSidebar"] [data-testid="stSlider"] [role="slider"] {
             background-color: #10b981 !important;
             border: 2px solid #ffffff !important;
@@ -100,7 +100,7 @@ st.markdown(
             font-weight: 700 !important;
         }
 
-        /* Explicando: caixa do filtro de categoria com borda roxa e destaque verde no hover */
+        /*  caixa do filtro de categoria com borda roxa e destaque verde no hover */
         [data-testid="stSidebar"] [data-baseweb="select"] > div {
             border-radius: 10px !important;
             border: 1.5px solid rgba(168, 85, 247, 0.45) !important;
@@ -467,7 +467,7 @@ st.markdown(
         }
 
         /* --- FOTOS DOS PRODUTOS COM ZOOM NO HOVER --- */
-        /* Explicando: oculta o botao nativo de tela cheia das fotos para nao conflitar com o zoom do card */
+        /*  oculta o botao nativo de tela cheia das fotos para nao conflitar com o zoom do card */
      div[class*="st-key-productCard_"] [data-testid="stFullScreenFrame"] button,
      div[class*="st-key-productCard_"] [data-testid="stElementToolbar"],
      div[class*="st-key-cartItem_"] [data-testid="stFullScreenFrame"] button,
@@ -797,43 +797,43 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-#Explicando: o Streamlit roda o arquivo inteiro a cada clique. O session_state guarda a arvore na memoria.
+# o Streamlit roda o arquivo inteiro a cada clique. O session_state guarda a arvore na memoria.
 if "catalog" not in st.session_state:
     catalogTree = BinaryTree()
     loadCatalog(catalogTree)
     st.session_state.catalog = catalogTree
 
-#Explicando: cria o carrinho na memoria da sessao (dicionario guardando cada produto e sua quantidade)
+# cria o carrinho na memoria da sessao (dicionario guardando cada produto e sua quantidade)
 if "cart" not in st.session_state:
     st.session_state.cart = {}
 
-#Explicando: controla se a janela do carrinho precisa continuar aberta apos editar itens la dentro
+# controla se a janela do carrinho precisa continuar aberta apos editar itens la dentro
 if "reopenCart" not in st.session_state:
     st.session_state.reopenCart = False
 
-#Explicando: apelido curto para facilitar o uso da arvore guardada na memoria
+# apelido curto para facilitar o uso da arvore guardada na memoria
 catalog = st.session_state.catalog
 
 
 # --- FUNCOES AUXILIARES DO CARRINHO E FILTROS ---
 def getTotalCartItems():
-    #Explicando: soma a quantidade de todos os produtos que estao dentro do carrinho
+    # soma a quantidade de todos os produtos que estao dentro do carrinho
     return sum(item["quantity"] for item in st.session_state.cart.values())
 
 
 def addToCart(product):
-    #Explicando: id(product) gera um numero unico para cada objeto na memoria
+    # id(product) gera um numero unico para cada objeto na memoria
     productId = id(product)
     currentTotal = getTotalCartItems()
     currentQty = st.session_state.cart[productId]["quantity"] if productId in st.session_state.cart else 0
 
-    #Explicando: trava de seguranca - impede passar de 15 itens no carrinho ou ultrapassar o estoque do produto
+    # trava de seguranca - impede passar de 15 itens no carrinho ou ultrapassar o estoque do produto
     if currentTotal >= maxCartItems:
         return
     if currentQty >= product.stock:
         return
 
-    #Explicando: se o produto ja existe no carrinho soma +1, senao cria uma nova entrada com quantidade 1
+    # se o produto ja existe no carrinho soma +1, senao cria uma nova entrada com quantidade 1
     if productId in st.session_state.cart:
         st.session_state.cart[productId]["quantity"] += 1
     else:
@@ -841,19 +841,19 @@ def addToCart(product):
 
 
 def resetFilters(minLim, maxLim):
-    #Explicando: restaura a faixa de preco e a categoria para os valores iniciais
+    # restaura a faixa de preco e a categoria para os valores iniciais
     st.session_state.priceRangeFilter = (minLim, maxLim)
     st.session_state.categoryFilter = "Todas"
 
 
-#Explicando: @st.dialog cria uma janela flutuante (modal) por cima da loja para exibir e gerenciar o carrinho
+# @st.dialog cria uma janela flutuante (modal) por cima da loja para exibir e gerenciar o carrinho
 @st.dialog("🛒 Seu Carrinho Gamer", width="large")
 def showCartModal():
     cart = st.session_state.cart
     totalItems = getTotalCartItems()
     fillPercent = min((totalItems / maxCartItems) * 100, 100)
 
-    #Explicando: barra de progresso customizada em degrade neon para indicar a lotacao do carrinho
+    # barra de progresso customizada em degrade neon para indicar a lotacao do carrinho
     st.markdown(
         f"""
 <div class="cart-modal-header">
@@ -873,7 +873,7 @@ def showCartModal():
 
     totalPrice = 0.0
 
-    #Explicando: list(cart.items()) cria uma copia segura para permitir remover itens durante o loop sem erro
+    # list(cart.items()) cria uma copia segura para permitir remover itens durante o loop sem erro
     for productId, itemData in list(cart.items()):
         product = itemData["product"]
         quantity = itemData["quantity"]
@@ -887,7 +887,7 @@ def showCartModal():
             )
 
             with thumbCol:
-                #Explicando: exibe a miniatura da foto do produto tambem dentro do carrinho
+                # exibe a miniatura da foto do produto tambem dentro do carrinho
                 imagePath = getattr(product, "image", "").strip()
                 isWebUrl = imagePath.startswith("http://") or imagePath.startswith("https://")
                 isLocalFile = imagePath != "" and os.path.exists(imagePath)
@@ -915,7 +915,7 @@ def showCartModal():
                         cart[productId]["quantity"] -= 1
                     else:
                         del cart[productId]
-                    #Explicando: so mantem a janela aberta se ainda sobrou algum produto no carrinho
+                    # so mantem a janela aberta se ainda sobrou algum produto no carrinho
                     st.session_state.reopenCart = getTotalCartItems() > 0
                     st.rerun()
 
@@ -929,11 +929,11 @@ def showCartModal():
             with removeCol:
                 if st.button("🗑️", key=f"del_{productId}", help="Remover produto do carrinho", use_container_width=True):
                     del cart[productId]
-                    #Explicando: se removeu o ultimo item, fecha o modal e o botao volta a fugir
+                    # se removeu o ultimo item, fecha o modal e o botao volta a fugir
                     st.session_state.reopenCart = getTotalCartItems() > 0
                     st.rerun()
 
-    #Explicando: caixa estilizada destacando o resumo de itens e o valor total da compra
+    # caixa estilizada destacando o resumo de itens e o valor total da compra
     st.markdown(
         f"""
 <div class="cart-total-box">
@@ -950,7 +950,7 @@ def showCartModal():
     if totalItems >= maxCartItems:
         st.warning(f"Você atingiu o limite máximo de {maxCartItems} unidades no carrinho.")
 
-    #Explicando: coloca os botoes de acao lado a lado com estilos proprios (chaves clearCartBtn e payCartBtn)
+    # coloca os botoes de acao lado a lado com estilos proprios (chaves clearCartBtn e payCartBtn)
     clearCol, payCol = st.columns(2)
     proceedPayment = False
 
@@ -1003,12 +1003,12 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-#Explicando: busca o maior preco atual na arvore para definir o limite maximo do slider
+# busca o maior preco atual na arvore para definir o limite maximo do slider
 mostExpensiveInitial = catalog.findMax()
 minLimit = 0.0
 maxLimit = float(mostExpensiveInitial.price)
 
-#Explicando: inicializa os filtros no session_state para permitir o botao de limpar filtros funcionar sem erro
+# inicializa os filtros no session_state para permitir o botao de limpar filtros funcionar sem erro
 if "priceRangeFilter" not in st.session_state:
     st.session_state.priceRangeFilter = (minLimit, maxLimit)
 if "categoryFilter" not in st.session_state:
@@ -1022,7 +1022,7 @@ minPrice, maxPrice = st.sidebar.slider(
     key="priceRangeFilter"
 )
 
-#Explicando: pega todas as categorias existentes na arvore sem repeticao usando set() e ordena de A a Z
+# pega todas as categorias existentes na arvore sem repeticao usando set() e ordena de A a Z
 allProducts = catalog.getAllInOrder()
 categories = sorted(set(item.category for item in allProducts))
 
@@ -1046,7 +1046,7 @@ totalNodes = catalog.countNodes()
 skippedNodes = totalNodes - visitedNodes
 savedPercent = (skippedNodes / totalNodes) * 100 if totalNodes > 0 else 0
 
-#Explicando: exibe um resumo visual dos filtros ativos e da economia da arvore dentro da barra lateral
+# exibe um resumo visual dos filtros ativos e da economia da arvore dentro da barra lateral
 st.sidebar.markdown(
     f"""
 <div class="sidebar-summary-card">
@@ -1076,7 +1076,7 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-#Explicando: so ativa o botao de limpar filtros se o usuario realmente alterou o preco ou a categoria
+# so ativa o botao de limpar filtros se o usuario realmente alterou o preco ou a categoria
 hasActiveFilter = (minPrice > minLimit) or (maxPrice < maxLimit) or (selectedCategory != "Todas")
 st.sidebar.button(
     "🔄 Limpar filtros",
