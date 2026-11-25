@@ -42,24 +42,36 @@ def main():
             printProducts(allProducts)
 
         elif option == "2":
-            # try/except evita que o programa quebre se o usuario digitar letras em vez de numeros
+            #try/except evita que o programa quebre se o usuario digitar letras em vez de numeros
             try:
                 minPrice = float(input("Minimum price (R$): "))
                 maxPrice = float(input("Maximum price (R$): "))
-                #try: se o usuario digitar algo que nao seja numero, o programa nao quebra e mostra uma mensagem de erro
+                # try: se o usuario digitar algo que nao seja numero, o programa nao quebra e mostra uma mensagem de erro
             except ValueError:
                 print("\nInvalid value! Please enter only numbers (e.g., 500 or 1200.50).")
                 continue
                 #except: se o usuario digitar algo que nao seja numero, o programa nao quebra e mostra uma mensagem de erro e em seguida vem o continue que faz o programa voltar para o inicio do loop e mostrar o menu novamente sem que o programa quebre
 
-            # Se o usuario inverter os valores sem querer, avisamos antes de buscar
+            #Se o usuario inverter os valores sem querer, avisamos antes de buscar
             if minPrice > maxPrice:
                 print("\nThe minimum price cannot be greater than the maximum price.")
                 continue
 
-            # Chama o filtro otimizado da BST que pula os galhos fora do intervalo
-            filteredProducts = catalog.searchByPriceRange(minPrice, maxPrice)
+            #desempacota os dois valores devolvidos pela arvore (lista filtrada e total de nos visitados)
+            filteredProducts, visitedNodes = catalog.searchByPriceRange(minPrice, maxPrice)
             printProducts(filteredProducts)
+
+            #conta o total de produtos cadastrados na arvore para comparar com uma lista comum
+            totalNodes = catalog.countNodes()
+            #calcula quantos produtos a arvore conseguiu pular sem precisar analisar
+            skippedNodes = totalNodes - visitedNodes
+            #calcula a porcentagem de economia (e evita divisao por zero se a arvore estiver vazia)
+            savedPercent = (skippedNodes / totalNodes) * 100 if totalNodes > 0 else 0
+
+            print("\n--- Search Efficiency (BST vs Standard List) ---")
+            print(f"Standard list (linear search): would check all {totalNodes} products")
+            print(f"Your BST (binary tree):        visited only {visitedNodes} products")
+            print(f"Skipped branches:              {skippedNodes} products skipped ({savedPercent:.2f}% saved)")
 
         elif option == "3":
             # Busca os extremos descendo so para a esquerda (min) ou so para a direita (max)

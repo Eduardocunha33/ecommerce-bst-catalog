@@ -99,24 +99,43 @@ class BinaryTree:
         return currentNode.value
 
     def searchByPriceRange(self, minPrice, maxPrice):
+        #cria a lista vazia onde os produtos dentro da faixa serao guardados
         resultList = []
-        self.searchByPriceRangeRecursive(self.root, minPrice, maxPrice, resultList)
-        return resultList
-        #Esse método retorna uma lista de produtos que estão dentro da faixa de preço especificada (minPrice, maxPrice).
+        #a funcao recursiva preenche a resultList e devolve o total de nos visitados
+        visitedNodes = self.searchByPriceRangeRecursive(self.root, minPrice, maxPrice, resultList)
+        #devolve dois valores ao mesmo tempo (a lista filtrada e o contador)
+        return resultList, visitedNodes
 
     def searchByPriceRangeRecursive(self, node, minPrice, maxPrice, resultList):
+        #caso base - se chegou em um galho vazio (None), nao visitou nenhum no (retorna 0)
         if node is None:
-            return
-        #Este método é chamado recursivamente para percorrer a árvore binária de busca e encontrar os produtos que estão dentro da faixa de preço especificada. Ele utiliza a propriedade da árvore binária de busca para otimizar a busca, evitando explorar ramos que não podem conter produtos dentro da faixa de preço.
+            return 0
 
-        # 1. Só explora a esquerda se ainda puder existir algo >= minPrice
+        #comeca em 1 porque a arvore acabou de entrar e analisar este no atual
+        visited = 1
+
+        #so desce para a esquerda se ainda puder existir preco >= minPrice, somando os nos visitados la
         if node.value.price > minPrice:
-            self.searchByPriceRangeRecursive(node.left, minPrice, maxPrice, resultList)
+            visited += self.searchByPriceRangeRecursive(node.left, minPrice, maxPrice, resultList)
 
-        # 2. Se o produto atual está dentro da faixa, guarda na lista
+        #se o preco do no atual esta dentro do intervalo, adiciona o produto na lista
         if minPrice <= node.value.price <= maxPrice:
             resultList.append(node.value)
 
-        # 3. Só explora a direita se ainda puder existir algo <= maxPrice
+        #so desce para a direita se ainda puder existir preco <= maxPrice, somando os nos visitados la
         if node.value.price <= maxPrice:
-            self.searchByPriceRangeRecursive(node.right, minPrice, maxPrice, resultList)
+            visited += self.searchByPriceRangeRecursive(node.right, minPrice, maxPrice, resultList)
+
+        #devolve para quem chamou o total de nos visitados a partir deste ponto
+        return visited
+
+    def countNodes(self):
+        #inicia a contagem total de produtos na arvore a partir da raiz
+        return self.countNodesRecursive(self.root)
+
+    def countNodesRecursive(self, node):
+        #se o no for vazio, contribui com 0 na contagem
+        if node is None:
+            return 0
+        #soma 1 (o no atual) + tudo que existe na esquerda + tudo que existe na direita
+        return 1 + self.countNodesRecursive(node.left) + self.countNodesRecursive(node.right)
